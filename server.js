@@ -17,18 +17,18 @@ const db = new sqlite3.Database('users.db', (err) => {
     console.log('Connected to SQLite database.');
 });
 
-// Tạo bảng users
+// Tạo bảng users với cột email
 db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
+    email TEXT UNIQUE,
     password TEXT
 )`);
 
 // Đăng ký
 app.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password required' });
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password required' });
     }
     try {
         // TODO
@@ -36,11 +36,11 @@ app.post('/register', async (req, res) => {
         //
         const hashedPassword = password;
         //
-        db.run(`INSERT INTO users (username, password) VALUES (?, ?)`,
-            [username, hashedPassword],
+        db.run(`INSERT INTO users (email, password) VALUES (?, ?)`,
+            [email, hashedPassword],
             function (err) {
                 if (err) {
-                    return res.status(400).json({ message: 'Username already exists' });
+                    return res.status(400).json({ message: 'Email already exists' });
                 }
                 res.status(201).json({ message: 'Registration successful' });
             });
@@ -51,16 +51,16 @@ app.post('/register', async (req, res) => {
 
 // Đăng nhập
 app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password required' });
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password required' });
     }
-    db.get(`SELECT * FROM users WHERE username = ?`, [username], async (err, user) => {
+    db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
         if (err) {
             return res.status(500).json({ message: 'Server error' });
         }
         if (!user) {
-            return res.status(400).json({ message: 'Invalid username or password' });
+            return res.status(400).json({ message: 'Invalid email or password' });
         }
         // TODO
         // const isMatch = await bcrypt.compare(password, user.password);
@@ -68,7 +68,7 @@ app.post('/login', (req, res) => {
         const isMatch = (password == user.password) ? true : false;
         //
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid username or password' });
+            return res.status(400).json({ message: 'Invalid email or password' });
         }
         res.status(200).json({ message: 'Login successful' });
     });
